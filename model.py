@@ -449,7 +449,6 @@ class Reshape(Function):
 
 # Step 31 - expand_function_forward
 def expand_function_forward(ctx, x, shape):
-    # TODO: cache x.shape on ctx, then broadcast x to the target shape
     ctx.input_shape = x.shape
     return x.lazybuffer_movement_e(MovementOps.EXPAND, shape)
 
@@ -460,6 +459,11 @@ def expand_function_backward(ctx, grad_output):
             zip(ctx.input_shape, grad_output.shape)) if in_dim == 1 and out_dim != 1)
     reduced = grad_output.lazybuffer_reduce_e(ReduceOps.SUM, axes) if axes else grad_output
     return reduced.lazybuffer_movement_e(MovementOps.RESHAPE, ctx.input_shape)
+
+return forward, backward
+
+_expand_forward, _expand_backward = expand_function_forward_backward()
+Expand = type('Expand', (Function,), {'forward': _expand_forward, 'backward': _expand_backward})
 
 # Step 33 - permute_function_forward_backward
 def permute_function_forward_backward():
@@ -610,8 +614,32 @@ def bind_unary_tensor_methods():
         'sigmoid': lambda t: Sigmoid.apply(t),
     }
 
-# Step 41 - broadcasted (not yet solved)
-# TODO: implement
+# Step 41 - broadcasted
+def broadcasted(x, y):
+    shape_x = x.shape
+    shape_y = y.shape
+
+    
+    ndim = max(len(shape_x), len(shape_y))
+    padded_x = (1,) * (ndim - len(shape_x)) + shape_x
+    padded_y = (1,) * (ndim - len(shape_y)) + shape_y
+
+    out_shape = tuple(max(a, b) for a, b in zip(padded_x, padded_y))
+
+    def align(t, padded_shape):
+        if t.shape == out_shape:
+            return t  #
+       
+        if t.shape != padded_shape:
+            t = Reshape.apply(t, shape=padded_shape)
+        if padded_shape != out_shape:
+            t = Expand.apply(t, shape=out_shape)
+        return t
+
+    new_x = align(x, padded_x)
+    new_y = align(y, padded_y)
+
+    return new_x, new_y
 
 # Step 42 - bind_binary_tensor_methods (not yet solved)
 # TODO: implement
