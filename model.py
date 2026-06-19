@@ -509,8 +509,20 @@ def tensor_from_data(data, requires_grad=False):
     
     return Tensor(buf, requires_grad=requires_grad)
 
-# Step 36 - tensor_creation_helpers (not yet solved)
-# TODO: implement
+# Step 36 - tensor_creation_helpers
+def tensor_creation_helpers():
+    # TODO: return (zeros_fn, ones_fn, full_fn) building constant-filled Tensors
+    def zeros_fn(shape, requires_grad = True):
+        return Tensor(LazyBuffer(np.zeros(shape, dtype = np.float32)),requires_grad = requires_grad)
+
+    def ones_fn(shape, requires_grad=False):
+        return Tensor(LazyBuffer(np.ones(shape, dtype=np.float32)), requires_grad=requires_grad)
+
+    def full_fn(shape, value, requires_grad=False):
+        return Tensor(LazyBuffer(np.full(shape, value, dtype=np.float32)), requires_grad=requires_grad)
+
+
+    return zeros_fn, ones_fn, full_fn
 
 # Step 37 - tensor_randn (not yet solved)
 # TODO: implement
