@@ -454,16 +454,12 @@ def expand_function_forward(ctx, x, shape):
 
 # Step 32 - expand_function_backward
 def expand_function_backward(ctx, grad_output):
-    # TODO: Sum grad_output over the broadcast axes back to ctx.input_shape...
     axes = tuple(i for i, (in_dim, out_dim) in enumerate(
-            zip(ctx.input_shape, grad_output.shape)) if in_dim == 1 and out_dim != 1)
+        zip(ctx.input_shape, grad_output.shape)) if in_dim == 1 and out_dim != 1)
     reduced = grad_output.lazybuffer_reduce_e(ReduceOps.SUM, axes) if axes else grad_output
     return reduced.lazybuffer_movement_e(MovementOps.RESHAPE, ctx.input_shape)
 
-return forward, backward
-
-_expand_forward, _expand_backward = expand_function_forward_backward()
-Expand = type('Expand', (Function,), {'forward': _expand_forward, 'backward': _expand_backward})
+Expand = type('Expand', (Function,), {'forward': expand_function_forward, 'backward': expand_function_backward})
 
 # Step 33 - permute_function_forward_backward
 def permute_function_forward_backward():
