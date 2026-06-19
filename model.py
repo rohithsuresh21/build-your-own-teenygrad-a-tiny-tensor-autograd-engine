@@ -463,7 +463,6 @@ Expand = type('Expand', (Function,), {'forward': expand_function_forward, 'backw
 
 # Step 33 - permute_function_forward_backward
 def permute_function_forward_backward():
-    # TODO: return (forward, backward); forward reorders axes, backward inverts the order
     def forward(self, x, order):
         self.order = order
         return x.lazybuffer_movement_e(MovementOps.PERMUTE, order)
@@ -473,6 +472,9 @@ def permute_function_forward_backward():
         return grad_output.lazybuffer_movement_e(MovementOps.PERMUTE, inv_order)
 
     return (forward, backward)
+
+_permute_forward, _permute_backward = permute_function_forward_backward()
+Permute = type('Permute', (Function,), {'forward': _permute_forward, 'backward': _permute_backward})
 
 # Step 34 - Tensor
 class Tensor:
