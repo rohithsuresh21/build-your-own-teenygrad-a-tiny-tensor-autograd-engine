@@ -431,22 +431,29 @@ class Max(Function):
 
 # Step 29 - max_function_backward
 def backward(self, grad_output):
+    # TODO: route grad_output back to the input elements that were the maximum
        ret_expanded = self.ret.expand(self.x.shape)
-       mask = self.x.e(BinaryOps.CMPEQ, ret_expanded) if hasattr(BinaryOps, "CMPEQ") else \
-       self.x.e(BinaryOps.CMPLT, ret_expanded.e(UnaryOps.NEG)).e(UnaryOps.NEG)
-        ounts = mask.r(ReduceOps.SUM, self.axis).expand(self.x.shape)
-       return grad_output.expand(self.x.shape).e(BinaryOps.MUL, mask).e(BinaryOps.DIV, counts)
+       lt1 = self.x.lazybuffer_binary_e(BinaryOps.CMPLT, ret_expanded)
+       lt2 = ret_expanded.lazybuffer_binary_e(BinaryOps.CMPLT, self.x)
+       not_lt1 = lt1.e(UnaryOps.NEG).lazybuffer_binary_e(BinaryOps.ADD, lt1.const(1.0, lt1.shape))
+       not_lt2 = lt2.e(UnaryOps.NEG).lazybuffer_binary_e(BinaryOps.ADD, lt2.const(1.0, lt2.shape))
+       mask = not_lt1.lazybuffer_binary_e(BinaryOps.MUL, not_lt2)
+
+       counts = mask.lazybuffer_reduce_e(ReduceOps.SUM, self.axis).expand(self.x.shape)
+       normalized_mask = mask.lazybuffer_binary_e(BinaryOps.DIV, counts)
+       return grad_output.expand(self.x.shape).lazybuffer_binary_e(BinaryOps.MUL, normalized_mask)
+
+
+Max.backward = backward
 
 # Step 30 - Reshape
 class Reshape(Function):
     def forward(self, x, shape):
-        print("AVAILABLE:", [m for m in dir(x) if not m.startswith('_')])
         self.input_shape = x.shape
-        self.ret = x.reshape(shape)
-        return self.ret
+        return x.lazybuffer_movement_e(MovementOps.RESHAPE, shape)
 
     def backward(self, grad_output):
-        return grad_output.reshape(self.input_shape)
+        return grad_output.lazybuffer_movement_e(MovementOps.RESHAPE, self.input_shape)
 
 # Step 31 - expand_function_forward (not yet solved)
 # TODO: implement
