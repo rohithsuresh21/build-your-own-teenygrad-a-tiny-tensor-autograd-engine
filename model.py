@@ -348,13 +348,10 @@ class Sigmoid(Function):
         return self.ret
 
     def backward(self, grad_output):
-        # 1. Create a constant buffer matching the shape
         one = grad_output.const(1.0, grad_output.shape)
-        
-        # 2. Pass binary inputs grouped into a tuple or list inside .e()
-        one_minus_y = one.lazybuffer_binary_e('SUB', self.ret)
-        y_one_minus_y = self.ret.lazybuffer_binary_e('MUL', one_minus_y)
-        return grad_output.lazybuffer_binary_e('MUL', y_one_minus_y)
+        one_minus_y = one.lazybuffer_binary_e(BinaryOps.ADD, self.ret)
+        y_one_minus_y = self.ret.lazybuffer_binary_e(BinaryOps.MUl, one_minus_y)
+        return grad_output.lazybuffer_binary_e(BinaryOps.MUl, y_one_minus_y)
 
 # Step 22 - Add
 class Add(Function):
@@ -369,13 +366,12 @@ class Add(Function):
 # Step 23 - Sub
 class Sub(Function):
     def forward(self, x, y):
-        self.ret = x.lazybuffer_binary_e('SUB', y)
-        return self.ret.lazybuffer_binary_e('SUB', x)
+        return x.lazybuffer_binary_e(BinaryOps.SUB, y)
 
     def backward(self, grad_output):
         return (
             grad_output if self.needs_input_grad else None,
-            grad_output if self.needs_input_grad else None
+            grad_output.e(Unaryops.NEG) if self.needs_input_grad else None
         )
 
 # Step 24 - Mul
