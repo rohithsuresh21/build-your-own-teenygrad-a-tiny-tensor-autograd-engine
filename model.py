@@ -639,8 +639,35 @@ def broadcasted(x, y):
 
     return new_x, new_y
 
-# Step 42 - bind_binary_tensor_methods (not yet solved)
-# TODO: implement
+# Step 42 - bind_binary_tensor_methods
+def bind_binary_tensor_methods():
+    def add(self, other):
+        a, b = broadcasted(self, other)
+        return Add.apply(a, b)
+
+    def sub(self, other):
+        a, b = broadcasted(self, other)
+        return Sub.apply(a, b)
+
+    def mul(self, other):
+        a, b = broadcasted(self, other)
+        return Mul.apply(a, b)
+
+    def div(self, other):
+        a, b = broadcasted(self, other)
+        return Div.apply(a, b)
+
+    Tensor.add = add
+    Tensor.sub = sub
+    Tensor.mul = mul
+    Tensor.div = div
+
+    Tensor.__add__ = add
+    Tensor.__sub__ = sub
+    Tensor.__mul__ = mul
+    Tensor.__truediv__ = div
+
+    return None
 
 # Step 43 - bind_movement_tensor_methods (not yet solved)
 # TODO: implement
