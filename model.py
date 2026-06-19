@@ -358,19 +358,13 @@ class Sigmoid(Function):
 
 # Step 22 - Add
 class Add(Function):
-    # TODO: apply a binary elementwise op between two LazyBuffers, return a new LazyBuffer
     def forward(self, x, y):
-        self.x = x 
-        self.y = y
-        self.res1 = y.lazybuffer_binary_e('ADD', x)
-        self.res2 = x.lazybuffer_binary_e('ADD', y)
-        return self.res2.lazybuffer_binary_e('ADD', self.res1)
+        return x.lazybuffer_binary_e(BinaryOps.ADD, y)
 
     def backward(self, grad_output):
-        return (
-            grad_output if self.needs_input_grad else None,
-            grad_output if self.needs_input_grad else None
-        )
+        grad_x = grad_output if self.needs_input_grad[0] else None
+        grad_y = grad_output if self.needs_input_grad[1] else None
+        return grad_x, grad_y
 
 # Step 23 - Sub
 class Sub(Function):
