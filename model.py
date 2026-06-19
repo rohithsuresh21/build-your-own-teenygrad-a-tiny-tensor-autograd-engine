@@ -524,8 +524,23 @@ def tensor_creation_helpers():
 
     return zeros_fn, ones_fn, full_fn
 
-# Step 37 - tensor_randn (not yet solved)
-# TODO: implement
+# Step 37 - tensor_randn
+def tensor_randn(shape, seed=None, requires_grad=False):
+    # TODO: Create a Tensor of standard-normal samples for the given shape.
+    lazybuffer_rand = rand
+    shape = tuple(shape)
+    n = math.prod(shape) if shape else 1
+    u_buf = rand((2 * n,), seed=seed)
+    u = u_buf._np
+
+    u1 = u[:n]
+    u2 = u[n:2 * n]
+    
+    eps = 1e-12
+    z = np.sqrt(-2.0 * np.log(u1 + eps)) * np.cos(2.0 * np.pi * u2)
+
+    z = z.reshape(shape).astype(np.float32)
+    return Tensor(LazyBuffer(z), requires_grad=requires_grad)
 
 # Step 38 - build_topological_order (not yet solved)
 # TODO: implement
