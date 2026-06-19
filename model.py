@@ -455,8 +455,11 @@ class Reshape(Function):
     def backward(self, grad_output):
         return grad_output.lazybuffer_movement_e(MovementOps.RESHAPE, self.input_shape)
 
-# Step 31 - expand_function_forward (not yet solved)
-# TODO: implement
+# Step 31 - expand_function_forward
+def expand_function_forward(ctx, x, shape):
+    # TODO: cache x.shape on ctx, then broadcast x to the target shape
+    ctx.input_shape = x.shape
+    return x.lazybuffer_movement_e(MovementOps.EXPAND, shape)
 
 # Step 32 - expand_function_backward (not yet solved)
 # TODO: implement
