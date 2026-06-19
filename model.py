@@ -507,7 +507,7 @@ def tensor_from_data(data, requires_grad=False):
         arr = np.array(data, dtype = np.float32)
         buf = LazyBuffer(arr)
     
-    return Tensor(arr, requires_grad=requires_grad)
+    return Tensor(buf, requires_grad=requires_grad)
 
 # Step 36 - tensor_creation_helpers (not yet solved)
 # TODO: implement
