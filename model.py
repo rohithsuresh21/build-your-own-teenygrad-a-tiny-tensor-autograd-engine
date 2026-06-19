@@ -342,15 +342,17 @@ class Sqrt(Function):
         return grad_scaled.lazybuffer_binary_e('DIV', self.ret)
 
 # Step 21 - Sigmoid
+# Step 21 - Sigmoid
 class Sigmoid(Function):
     def forward(self, x):
-        return x.lazybuffer_binary_e(BinaryOps.SIGMOID)
+        self.ret = x.e(UnaryOps.SIGMOID)
+        return self.ret
 
     def backward(self, grad_output):
         one = grad_output.const(1.0, grad_output.shape)
-        one_minus_y = one.lazybuffer_binary_e(BinaryOps.ADD, x)
-        y_one_minus_y = self.ret.lazybuffer_binary_e(BinaryOps.MUl, one_minus_y)
-        return grad_output.lazybuffer_binary_e(BinaryOps.MUl, y_one_minus_y)
+        one_minus_y = one.lazybuffer_binary_e(BinaryOps.SUB, self.ret)
+        y_one_minus_y = self.ret.lazybuffer_binary_e(BinaryOps.MUL, one_minus_y)
+        return grad_output.lazybuffer_binary_e(BinaryOps.MUL, y_one_minus_y)
 
 # Step 22 - Add
 class Add(Function):
@@ -429,32 +431,22 @@ class Max(Function):
 
 # Step 29 - max_function_backward
 def backward(self, grad_output):
-        ret_expanded = self.ret.expand(self.x.shape)
-        mask = self.x.lazybuffer_binary_e(BinaryOps.CMPEQ, ret_expanded)
-        
-        counts = mask.lazybuffer_reduce_e(ReduceOps.SUM, self.axis)
-        counts_expanded = counts.expand(self.x.shape)
-        
-        normalized_mask = mask.lazybuffer_binary_e(BinaryOps.DIV, counts_expanded)
-        grad_x = grad_output.expand(self.x.shape).lazybuffer_binary_e(BinaryOps.MUL, normalized_mask)
-        return grad_x
-
-Max.backward = backward
+       ret_expanded = self.ret.expand(self.x.shape)
+       mask = self.x.e(BinaryOps.CMPEQ, ret_expanded) if hasattr(BinaryOps, "CMPEQ") else \
+       self.x.e(BinaryOps.CMPLT, ret_expanded.e(UnaryOps.NEG)).e(UnaryOps.NEG)
+        ounts = mask.r(ReduceOps.SUM, self.axis).expand(self.x.shape)
+       return grad_output.expand(self.x.shape).e(BinaryOps.MUL, mask).e(BinaryOps.DIV, counts)
 
 # Step 30 - Reshape
 class Reshape(Function):
     def forward(self, x, shape):
-        # TODO: cache the input shape and return x reshaped to shape
+        print("AVAILABLE:", [m for m in dir(x) if not m.startswith('_')])
         self.input_shape = x.shape
-        self.ret = x.lazybuffer_movement_e(MovementOps.RESHAPE, shape)
+        self.ret = x.reshape(shape)
         return self.ret
 
     def backward(self, grad_output):
-        # TODO: reshape the gradient back to the cached input shape
-        grad_x = None
-        if self.needs_input_grad:
-            grad_x = grad_output.lazybuffer_movement_e(MovementOps.RESHAPE, self.input_shape)
-        return grad_x
+        return grad_output.reshape(self.input_shape)
 
 # Step 31 - expand_function_forward (not yet solved)
 # TODO: implement
