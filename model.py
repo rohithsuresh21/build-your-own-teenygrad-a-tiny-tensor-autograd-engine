@@ -475,7 +475,6 @@ def permute_function_forward_backward():
     return (forward, backward)
 
 # Step 34 - Tensor
-# Step 34 - Tensor (updated to accept optional _ctx)
 class Tensor:
     def __init__(self, data, requires_grad=False, _ctx=None):
         if isinstance(data, LazyBuffer):
@@ -494,6 +493,10 @@ class Tensor:
     @property
     def dtype(self):
         return self.data.dtype
+
+    @property
+    def lazydata(self):
+        return self.data
 
     def numpy(self):
         return self.data._np
@@ -595,8 +598,17 @@ def tensor_backward(tensor):
 
     return None
 
-# Step 40 - bind_unary_tensor_methods (not yet solved)
-# TODO: implement
+# Step 40 - bind_unary_tensor_methods
+def bind_unary_tensor_methods():
+    # TODO: map neg/relu/log/exp/sqrt/sigmoid names to callables using function_apply
+     return {
+        'neg': lambda t: Neg.apply(t),
+        'relu': lambda t: Relu.apply(t),
+        'log': lambda t: Log.apply(t),
+        'exp': lambda t: Exp.apply(t),
+        'sqrt': lambda t: Sqrt.apply(t),
+        'sigmoid': lambda t: Sigmoid.apply(t),
+    }
 
 # Step 41 - broadcasted (not yet solved)
 # TODO: implement
