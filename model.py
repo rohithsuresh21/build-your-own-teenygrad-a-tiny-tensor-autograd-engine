@@ -344,12 +344,11 @@ class Sqrt(Function):
 # Step 21 - Sigmoid
 class Sigmoid(Function):
     def forward(self, x):
-        self.ret = x.e('SIGMOID')
-        return self.ret
+        return x.lazybuffer_binary_e(BinaryOps.SIGMOID)
 
     def backward(self, grad_output):
         one = grad_output.const(1.0, grad_output.shape)
-        one_minus_y = one.lazybuffer_binary_e(BinaryOps.ADD, self.ret)
+        one_minus_y = one.lazybuffer_binary_e(BinaryOps.ADD, x)
         y_one_minus_y = self.ret.lazybuffer_binary_e(BinaryOps.MUl, one_minus_y)
         return grad_output.lazybuffer_binary_e(BinaryOps.MUl, y_one_minus_y)
 
@@ -420,12 +419,12 @@ def backward(self, grad_output):
     return grad_output.lazybuffer_movement_e(MovementOps.EXPAND, self.input_shape)
 
 # Step 28 - max_function_forward
-UnaryOps, BinaryOps, ReduceOps, MovementOps = make_op_enums()
-
-class Add(Function):
-    def forward(self, x, y):
-        # Perform elementwise addition using the binary backend op
-        self.ret = x.lazybuffer_binary_e(BinaryOps.MAX, y)
+class Max(Function):
+    def forward(self, x, axis):
+        # TODO: reduce x with the MAX reduce op along axis and cache for backward
+        self.x = x
+        self.axis = axis
+        self.ret = x.lazybuffer_reduce_e(ReduceOps.MAX, axis)
         return self.ret
 
 # Step 29 - max_function_backward
