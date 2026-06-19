@@ -469,8 +469,18 @@ def expand_function_backward(ctx, grad_output):
     reduced = grad_output.lazybuffer_reduce_e(ReduceOps.SUM, axes) if axes else grad_output
     return reduced.lazybuffer_movement_e(MovementOps.RESHAPE, ctx.input_shape)
 
-# Step 33 - permute_function_forward_backward (not yet solved)
-# TODO: implement
+# Step 33 - permute_function_forward_backward
+def permute_function_forward_backward():
+    # TODO: return (forward, backward); forward reorders axes, backward inverts the order
+    def forward(self, x, order):
+        self.order = order
+        return x.lazybuffer_movement_e(MovementOps.PERMUTE, order)
+
+    def backward(self, grad_output):
+        inv_order = tuple(np.argsort(self.order))
+        return grad_output.lazybuffer_movement_e(MovementOps.PERMUTE, inv_order)
+
+    return (forward, backward)
 
 # Step 34 - Tensor (not yet solved)
 # TODO: implement
