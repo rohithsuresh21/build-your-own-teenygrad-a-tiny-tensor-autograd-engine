@@ -424,16 +424,16 @@ class Max(Function):
 # Step 29 - max_function_backward
 def backward(self, grad_output):
     # TODO: route grad_output back to the input elements that were the maximum
-       ret_expanded = self.ret.expand(self.x.shape)
+       ret_expanded = self.ret.lazybuffer_movement_e(MovementOps.EXPAND, self.x.shape)
        lt1 = self.x.lazybuffer_binary_e(BinaryOps.CMPLT, ret_expanded)
        lt2 = ret_expanded.lazybuffer_binary_e(BinaryOps.CMPLT, self.x)
        not_lt1 = lt1.e(UnaryOps.NEG).lazybuffer_binary_e(BinaryOps.ADD, lt1.const(1.0, lt1.shape))
        not_lt2 = lt2.e(UnaryOps.NEG).lazybuffer_binary_e(BinaryOps.ADD, lt2.const(1.0, lt2.shape))
        mask = not_lt1.lazybuffer_binary_e(BinaryOps.MUL, not_lt2)
 
-       counts = mask.lazybuffer_reduce_e(ReduceOps.SUM, self.axis).expand(self.x.shape)
+       counts = mask.lazybuffer_reduce_e(ReduceOps.SUM, self.axis).lazybuffer_movement_e(MovementOps.EXPAND, self.x.shape)
        normalized_mask = mask.lazybuffer_binary_e(BinaryOps.DIV, counts)
-       return grad_output.expand(self.x.shape).lazybuffer_binary_e(BinaryOps.MUL, normalized_mask)
+       return grad_output.lazybuffer_movement_e(MovementOps.EXPAND, self.x.shape).lazybuffer_binary_e(BinaryOps.MUL, normalized_mask)
 
 
 Max.backward = backward
