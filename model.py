@@ -544,27 +544,21 @@ def tensor_randn(shape, seed=None, requires_grad=False):
     return Tensor(LazyBuffer(z), requires_grad=requires_grad)
 
 # Step 38 - build_topological_order
-class Tensor:
-    def __init__(self, data, requires_grad=False, _ctx=None):
-        if isinstance(data, LazyBuffer):
-            self.data = data
-        else:
-            self.data = LazyBuffer(np.array(data, dtype=np.float32))
+def build_topological_order(tensor):
+    visited = set()
+    order = []
 
-        self.requires_grad = requires_grad
-        self.grad = None
-        self._ctx = _ctx
+    def dfs(node):
+        if id(node) in visited:
+            return
+        visited.add(id(node))
+        if node._ctx is not None:
+            for parent in node._ctx.parents:
+                dfs(parent)
+        order.append(node)
 
-    @property
-    def shape(self):
-        return self.data.shape
-
-    @property
-    def dtype(self):
-        return self.data.dtype
-
-    def numpy(self):
-        return self.data._np
+    dfs(tensor)
+    return order
 
 # Step 39 - tensor_backward (not yet solved)
 # TODO: implement
