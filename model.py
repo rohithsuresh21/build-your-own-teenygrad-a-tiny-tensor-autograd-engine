@@ -214,19 +214,11 @@ def function_forward_backward_stubs():
 # Step 15 - apply
 @classmethod
 def apply(cls, *tensors, **kwargs):
-    # TODO: build the Function, run forward on the input buffers, wrap in a
-    # Tensor, and link out._ctx when a gradient is needed.
-
     ctx = cls(*tensors)
-
     new = ctx.forward(*[t.lazydata for t in tensors], **kwargs)
-
-
-    out = Tensor(new, requires_grad = ctx.requires_grad)
-
+    out = Tensor(new, requires_grad=ctx.requires_grad)
     if ctx.requires_grad:
         out._ctx = ctx
-
     return out
 
     pass
@@ -485,11 +477,10 @@ def permute_function_forward_backward():
 # Step 34 - Tensor
 class Tensor:
     def __init__(self, data, requires_grad=False):
-        # TODO: wrap data in a LazyBuffer and store grad/ctx bookkeeping
         if isinstance(data, LazyBuffer):
-            self.lazydata = data
+            self.data = data
         else:
-            self.lazydata = LazyBuffer(np.array(data, dtype=np.float32))
+            self.data = LazyBuffer(np.array(data, dtype=np.float32))
 
         self.requires_grad = requires_grad
         self.grad = None
@@ -497,17 +488,26 @@ class Tensor:
 
     @property
     def shape(self):
-        return self.lazydata.shape
+        return self.data.shape
 
     @property
     def dtype(self):
-        return self.lazydata.dtype
+        return self.data.dtype
 
     def numpy(self):
-        return self.lazydata._np
+        return self.data._np
 
-# Step 35 - tensor_from_data (not yet solved)
-# TODO: implement
+# Step 35 - tensor_from_data
+def tensor_from_data(data, requires_grad=False):
+    # TODO: wrap a number, list, or numpy array in a LazyBuffer held by a Tensor
+    if isinstance(data, LazyBuffer):
+        buf = data
+    
+    else:
+        arr = np.array(data, dtype = np.float32)
+        buf = LazyBuffer(arr)
+    
+    return Tensor(arr, requires_grad=requires_grad)
 
 # Step 36 - tensor_creation_helpers (not yet solved)
 # TODO: implement
