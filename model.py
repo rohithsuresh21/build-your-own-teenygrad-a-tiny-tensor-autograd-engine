@@ -475,8 +475,9 @@ def permute_function_forward_backward():
     return (forward, backward)
 
 # Step 34 - Tensor
+# Step 34 - Tensor (updated to accept optional _ctx)
 class Tensor:
-    def __init__(self, data, requires_grad=False):
+    def __init__(self, data, requires_grad=False, _ctx=None):
         if isinstance(data, LazyBuffer):
             self.data = data
         else:
@@ -484,7 +485,7 @@ class Tensor:
 
         self.requires_grad = requires_grad
         self.grad = None
-        self._ctx = None
+        self._ctx = _ctx
 
     @property
     def shape(self):
@@ -542,8 +543,28 @@ def tensor_randn(shape, seed=None, requires_grad=False):
     z = z.reshape(shape).astype(np.float32)
     return Tensor(LazyBuffer(z), requires_grad=requires_grad)
 
-# Step 38 - build_topological_order (not yet solved)
-# TODO: implement
+# Step 38 - build_topological_order
+class Tensor:
+    def __init__(self, data, requires_grad=False, _ctx=None):
+        if isinstance(data, LazyBuffer):
+            self.data = data
+        else:
+            self.data = LazyBuffer(np.array(data, dtype=np.float32))
+
+        self.requires_grad = requires_grad
+        self.grad = None
+        self._ctx = _ctx
+
+    @property
+    def shape(self):
+        return self.data.shape
+
+    @property
+    def dtype(self):
+        return self.data.dtype
+
+    def numpy(self):
+        return self.data._np
 
 # Step 39 - tensor_backward (not yet solved)
 # TODO: implement
