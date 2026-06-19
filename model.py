@@ -370,8 +370,8 @@ class Sub(Function):
 
     def backward(self, grad_output):
         return (
-            grad_output if self.needs_input_grad else None,
-            grad_output.e(Unaryops.NEG) if self.needs_input_grad else None
+            grad_output if self.needs_input_grad[0] else None,
+            grad_output.e(UnaryOps.NEG) if self.needs_input_grad[1] else None
         )
 
 # Step 24 - Mul
