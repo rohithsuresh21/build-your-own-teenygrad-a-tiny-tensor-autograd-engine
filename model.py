@@ -391,25 +391,20 @@ class Mul(Function):
 # Step 25 - Div
 class Div(Function):
     def forward(self, x, y):
-        # 1. Stash both inputs for the quotient rule in backward
         self.x = x
         self.y = y
         self.ret = x.lazybuffer_binary_e(BinaryOps.DIV, y)
         return self.ret
 
     def backward(self, grad_output):
-        grad_x = None
-        grad_y = None
-        
-        if self.needs_input_grad:
+        grad_x = grad_y = None
+        if self.needs_input_grad[0]:
             grad_x = grad_output.lazybuffer_binary_e(BinaryOps.DIV, self.y)
-            
-        if self.needs_input_grad:
+        if self.needs_input_grad[1]:
             neg_grad = grad_output.e(UnaryOps.NEG)
             num = neg_grad.lazybuffer_binary_e(BinaryOps.MUL, self.x)
             den = self.y.lazybuffer_binary_e(BinaryOps.MUL, self.y)
             grad_y = num.lazybuffer_binary_e(BinaryOps.DIV, den)
-            
         return grad_x, grad_y
 
 # Step 26 - sum_function_forward
