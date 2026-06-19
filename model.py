@@ -378,15 +378,14 @@ class Sub(Function):
 class Mul(Function):
     def forward(self, x, y):
         # Save inputs for the chain rule calculation
-        self.x = x
+        self.x = x 
         self.y = y
-        self.ret = x.lazybuffer_binary_e('MUL', y)
-        return self.ret
+        return x.lazybuffer_binary_e(BinaryOps.MUL, y)
 
     def backward(self, grad_output):
         # Explicitly checking indexes and routes None if an input doesn't need grad
-        grad_x = grad_output.lazybuffer_binary_e('MUL', self.y) if self.needs_input_grad else None
-        grad_y = grad_output.lazybuffer_binary_e('MUL', self.x) if self.needs_input_grad else None
+        grad_x = grad_output.lazybuffer_binary_e(BinaryOps.MUL, self.y) if self.needs_input_grad[0] else None
+        grad_y = grad_output.lazybuffer_binary_e(BinaryOps.MUL, self.x) if self.needs_input_grad[1] else None
         return grad_x, grad_y
 
 # Step 25 - Div
