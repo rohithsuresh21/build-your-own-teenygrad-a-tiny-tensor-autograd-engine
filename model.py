@@ -135,6 +135,8 @@ def lazybuffer_binary_e(self, op, other):
         out = x / y
     elif op_name == 'CMPLT':
         out = (x < y).astype(np.float32)
+    elif op_name == 'CMPGT':  
+        out = (x > y).astype(np.float32)
     elif op_name == 'MAX':
         out = np.maximum(x, y)
     else:
