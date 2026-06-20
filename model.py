@@ -886,8 +886,14 @@ class MLP:
         # TODO: return combined parameter list of both layers
         return self.l1.parameters() + self.l2.parameters()
 
-# Step 53 - sgd_step (not yet solved)
-# TODO: implement
+# Step 53 - sgd_step
+def sgd_step(parameters, learning_rate):
+    # TODO: Update each parameter in place by subtracting lr times its gradient.
+    for p in parameters:
+        if p.grad is None:
+            continue
+        p.data._np = p.data._np - learning_rate * p.grad.data._np
+    return None
 
 # Step 54 - zero_grad (not yet solved)
 # TODO: implement
