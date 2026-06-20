@@ -908,8 +908,21 @@ def zero_grad(parameters):
         p.grad = None
     return None
 
-# Step 55 - make_toy_digit_dataset (not yet solved)
-# TODO: implement
+# Step 55 - make_toy_digit_dataset
+def make_toy_digit_dataset(num_samples, seed=0):
+    # TODO: build N noisy samples around three flattened 3x3 digit prototypes
+    prototypes =  np.array([
+        [0, 1, 0, 1, 0, 1, 0, 1, 0],
+        [1, 1, 1, 0, 1, 0, 1, 1, 1],
+        [1, 0, 1, 1, 1, 1, 1, 0, 1],
+    ], dtype=np.float32)
+
+    rng = np.random.RandomState(seed)
+    y = rng.randint(0, 3, size=num_samples)
+    noise = rng.randn(num_samples, 9) * 0.1
+    x = prototypes[y] + noise
+
+    return x.astype(np.float32), y.astype(np.int64)
 
 # Step 56 - accuracy (not yet solved)
 # TODO: implement
