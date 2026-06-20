@@ -69,6 +69,12 @@ class LazyBuffer:
     def __array__(self, dtype=None):
         return self._np if dtype is None else self._np.astype(dtype)
 
+    def __repr__(self):
+        return repr(self._np)
+
+    def __str__(self):
+        return str(self._np)
+
 # Step 5 - lazybuffer_const
 def const(value, shape):
     # TODO: Create a new LazyBuffer of the given shape filled with a constant value.
@@ -895,8 +901,12 @@ def sgd_step(parameters, learning_rate):
         p.data._np = p.data._np - learning_rate * p.grad.data._np
     return None
 
-# Step 54 - zero_grad (not yet solved)
-# TODO: implement
+# Step 54 - zero_grad
+def zero_grad(parameters):
+    # TODO: reset each parameter's .grad to None before the next backward pass
+    for p in parameters:
+        p.grad = None
+    return None
 
 # Step 55 - make_toy_digit_dataset (not yet solved)
 # TODO: implement
