@@ -867,8 +867,24 @@ class Linear:
     def parameters(self):
         return [self.weight, self.bias]
 
-# Step 52 - MLP (not yet solved)
-# TODO: implement
+# Step 52 - MLP
+class MLP:
+    """Two-layer MLP: Linear -> relu -> Linear."""
+    def __init__(self, in_features, hidden, out_features, seed=None):
+        # TODO: build two Linear layers (in->hidden, hidden->out)
+        self.l1 = Linear(in_features, hidden, seed=seed)
+        self.l2 = Linear(hidden, out_features, seed=seed)
+
+
+    def __call__(self, x):
+        # TODO: apply first layer, relu, then second layer
+        relu_fn = bind_unary_tensor_methods()['relu']
+        h = relu_fn(self.l1(x))
+        return self.l2(h)
+
+    def parameters(self):
+        # TODO: return combined parameter list of both layers
+        return self.l1.parameters() + self.l2.parameters()
 
 # Step 53 - sgd_step (not yet solved)
 # TODO: implement
