@@ -751,8 +751,22 @@ def tensor_mean(x, axis=None, keepdim=False):
 
 Tensor.mean = tensor_mean
 
-# Step 46 - tensor_transpose (not yet solved)
-# TODO: implement
+# Step 46 - tensor_transpose
+def tensor_transpose(x, ax1=-2, ax2=-1):
+    # TODO: swap axes ax1 and ax2 of tensor x using a permutation
+    shape = x.shape
+    ndim = len(shape)
+    a1 = ax1 if ax1 >= 0 else ax1 + ndim
+    a2 = ax2 if ax2 >= 0 else ax2 + ndim
+
+    order = list(range(ndim))
+    order[a1], order[a2] = order[a2], order[a1]
+
+    _permute_forward, _permute_backward = permute_function_forward_backward()
+    Permute = type('Permute', (Function,), {'forward': _permute_forward, 'backward': _permute_backward})
+    return Permute.apply(x, order=tuple(order))
+
+Tensor.transpose = tensor_transpose
 
 # Step 47 - tensor_matmul_2d (not yet solved)
 # TODO: implement
