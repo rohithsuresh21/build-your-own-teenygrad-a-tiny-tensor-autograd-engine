@@ -858,10 +858,15 @@ def sparse_categorical_cross_entropy(logits, labels):
 class Linear:
     # TODO: build randn weight [in,out] and bias [out], call computes x @ W + b
     def __init__(self, in_features, out_features, seed=None):
-        self.weight = tensor_randn((in_features, out_features), seed=seed, requires_grad=True)
+        w_seed = seed
+        b_seed = None if seed is None else seed + 1
+        self.weight = tensor_randn((in_features, out_features), seed=w_seed, requires_grad=True)
+        self.weight.data._np *= (1.0 / np.sqrt(in_features))
         self.bias = Tensor(LazyBuffer(np.zeros((out_features,), dtype=np.float32)), requires_grad=True)
 
     def __call__(self, x):
+        if not isinstance(x, Tensor):
+            x = tensor_from_data(x)
         out = tensor_matmul_2d(x, self.weight)
         bias_expanded = Expand.apply(
             Reshape.apply(self.bias, shape=(1, self.bias.shape[0])),
