@@ -46,6 +46,7 @@ def make_op_enums():
         DIV = auto()
         CMPLT = auto()
         MAX = auto()
+        
 
     class ReduceOps(Enum):
         SUM = auto()
