@@ -802,8 +802,24 @@ def tensor_softmax(x, axis=-1):
 
 Tensor.softmax = tensor_softmax
 
-# Step 49 - tensor_log_softmax (not yet solved)
-# TODO: implement
+# Step 49 - tensor_log_softmax
+def tensor_log_softmax(x, axis=-1):
+    ndim = len(x.shape)
+    norm_axis = axis if axis >= 0 else axis + ndim
+
+    m = Max.apply(x, axis=(norm_axis,))
+    shifted = Sub.apply(x, Expand.apply(m, shape=x.shape))
+
+    e = Exp.apply(shifted)
+    s = Sum.apply(e, axis=(norm_axis,))
+    log_s = Log.apply(s)
+    log_s = Expand.apply(log_s, shape=x.shape)
+
+    out = Sub.apply(shifted, log_s)
+    out.data._np = out.data._np.astype(np.float64)
+    return out
+
+Tensor.log_softmax = tensor_log_softmax
 
 # Step 50 - sparse_categorical_cross_entropy (not yet solved)
 # TODO: implement
