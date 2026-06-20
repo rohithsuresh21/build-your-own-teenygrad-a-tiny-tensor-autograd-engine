@@ -884,6 +884,8 @@ class MLP:
 
     def __call__(self, x):
         # TODO: apply first layer, relu, then second layer
+        if not isinstance(x, Tensor):
+            x = tensor_from_data(x)
         relu_fn = bind_unary_tensor_methods()['relu']
         h = relu_fn(self.l1(x))
         return self.l2(h)
@@ -935,8 +937,27 @@ def accuracy(logits, labels):
     preds = np.argmax(logits, axis=-1)
     return float(np.mean(preds == labels))
 
-# Step 57 - train_mlp (not yet solved)
-# TODO: implement
+# Step 57 - train_mlp
+def train_mlp(X, y, epochs=50, learning_rate=0.1, hidden=16, seed=0):
+    # TODO: build an MLP for X, y and run gradient descent, returning (model, loss_history)
+    X = np.asarray(X, dtype=np.float32)
+    y = np.asarray(y)
+    in_features = X.shape[1]
+    out_features = int(y.max()) + 1
+
+    model = MLP(in_features, hidden, out_features, seed=seed)
+    x_tensor = tensor_from_data(X)
+
+    loss_history = []
+    for _ in range(epochs):
+        zero_grad(model.parameters())
+        logits = model(x_tensor)
+        loss = sparse_categorical_cross_entropy(logits, y)
+        tensor_backward(loss)
+        sgd_step(model.parameters(), learning_rate)
+        loss_history.append(float(loss.numpy()))
+
+    return model, loss_history
 
 # Step 58 - evaluate_mlp (not yet solved)
 # TODO: implement
