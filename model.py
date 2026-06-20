@@ -768,8 +768,23 @@ def tensor_transpose(x, ax1=-2, ax2=-1):
 
 Tensor.transpose = tensor_transpose
 
-# Step 47 - tensor_matmul_2d (not yet solved)
-# TODO: implement
+# Step 47 - tensor_matmul_2d
+def tensor_matmul_2d(a, b):
+    m, k = a.shape
+    k2, n = b.shape
+
+    a3 = Reshape.apply(a, shape=(m, k, 1))
+    a3 = Expand.apply(a3, shape=(m, k, n))
+
+    b3 = Reshape.apply(b, shape=(1, k, n))
+    b3 = Expand.apply(b3, shape=(m, k, n))
+
+    prod_ = Mul.apply(a3, b3)
+    out = Sum.apply(prod_, axis=(1,))
+    return Reshape.apply(out, shape=(m, n))
+
+Tensor.matmul = tensor_matmul_2d
+Tensor.__matmul__ = tensor_matmul_2d
 
 # Step 48 - tensor_softmax (not yet solved)
 # TODO: implement
