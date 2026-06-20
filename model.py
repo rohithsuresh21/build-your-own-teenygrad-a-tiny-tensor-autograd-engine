@@ -61,11 +61,13 @@ def make_op_enums():
 # Step 4 - LazyBuffer
 class LazyBuffer:
     def __init__(self, np_array):
-        # TODO: wrap np_array as an ndarray and expose shape and dtype
         conv_numpy = np.array(np_array)
         self._np = conv_numpy
         self.shape = conv_numpy.shape
         self.dtype = conv_numpy.dtype
+
+    def __array__(self, dtype=None):
+        return self._np if dtype is None else self._np.astype(dtype)
 
 # Step 5 - lazybuffer_const
 def const(value, shape):
@@ -846,8 +848,24 @@ def sparse_categorical_cross_entropy(logits, labels):
 
     return Tensor(LazyBuffer(val))
 
-# Step 51 - Linear (not yet solved)
-# TODO: implement
+# Step 51 - Linear
+class Linear:
+    # TODO: build randn weight [in,out] and bias [out], call computes x @ W + b
+    def __init__(self, in_features, out_features, seed=None):
+        self.weight = tensor_randn((in_features, out_features), seed=seed, requires_grad=True)
+        self.bias = Tensor(LazyBuffer(np.zeros((out_features,), dtype=np.float32)), requires_grad=True)
+
+    def __call__(self, x):
+        out = tensor_matmul_2d(x, self.weight)
+        bias_expanded = Expand.apply(
+            Reshape.apply(self.bias, shape=(1, self.bias.shape[0])),
+            shape=out.shape
+        )
+        return Add.apply(out, bias_expanded)
+
+
+    def parameters(self):
+        return [self.weight, self.bias]
 
 # Step 52 - MLP (not yet solved)
 # TODO: implement
