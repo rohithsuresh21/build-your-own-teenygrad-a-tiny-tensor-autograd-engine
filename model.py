@@ -509,7 +509,9 @@ class Tensor:
         return self.data
 
     def numpy(self):
-        return self.data._np
+        if isinstance(self.data, LazyBuffer):
+            return np.asarray(self.data._np)
+        return np.asarray(self.data)
 
 # Step 35 - tensor_from_data
 def tensor_from_data(data, requires_grad=False):
@@ -949,10 +951,8 @@ def train_mlp(X, y, epochs=50, learning_rate=0.1, hidden=16, seed=0):
     y = np.asarray(y)
     in_features = X.shape[1]
     out_features = int(y.max()) + 1
-
     model = MLP(in_features, hidden, out_features, seed=seed)
     x_tensor = tensor_from_data(X)
-
     loss_history = []
     for _ in range(epochs):
         zero_grad(model.parameters())
@@ -961,7 +961,6 @@ def train_mlp(X, y, epochs=50, learning_rate=0.1, hidden=16, seed=0):
         tensor_backward(loss)
         sgd_step(model.parameters(), learning_rate)
         loss_history.append(float(loss.numpy()))
-
     return model, loss_history
 
 # Step 58 - evaluate_mlp (not yet solved)
