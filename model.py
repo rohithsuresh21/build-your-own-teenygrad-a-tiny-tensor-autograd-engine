@@ -510,7 +510,7 @@ class Tensor:
 
     def numpy(self):
         if isinstance(self.data, LazyBuffer):
-            return np.asarray(self.data._np)
+            return np.asarray(self.data._np, dtype=np.float32)
         return np.asarray(self.data)
 
 # Step 35 - tensor_from_data
