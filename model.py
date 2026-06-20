@@ -734,8 +734,22 @@ def bind_reduce_tensor_methods():
 
     return None
 
-# Step 45 - tensor_mean (not yet solved)
-# TODO: implement
+# Step 45 - tensor_mean
+def tensor_mean(x, axis=None, keepdim=False):
+    norm_axis = tuple(range(len(x.shape))) if axis is None else (
+        (axis,) if isinstance(axis, int) else tuple(axis))
+    norm_axis = tuple(a if a >= 0 else a + len(x.shape) for a in norm_axis)
+
+    s = Sum.apply(x, axis=norm_axis)
+    if not keepdim:
+        new_shape = tuple(d for i, d in enumerate(s.shape) if i not in norm_axis)
+        s = Reshape.apply(s, shape=new_shape)
+
+    n = prod([x.shape[a] for a in norm_axis])
+    scale = Tensor(LazyBuffer(np.full(s.shape, 1.0 / n, dtype=np.float32)))
+    return Mul.apply(s, scale)
+
+Tensor.mean = tensor_mean
 
 # Step 46 - tensor_transpose (not yet solved)
 # TODO: implement
