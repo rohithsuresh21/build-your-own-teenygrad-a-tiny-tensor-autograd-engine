@@ -786,8 +786,21 @@ def tensor_matmul_2d(a, b):
 Tensor.matmul = tensor_matmul_2d
 Tensor.__matmul__ = tensor_matmul_2d
 
-# Step 48 - tensor_softmax (not yet solved)
-# TODO: implement
+# Step 48 - tensor_softmax
+def tensor_softmax(x, axis=-1):
+    ndim = len(x.shape)
+    norm_axis = axis if axis >= 0 else axis + ndim
+
+    m = Max.apply(x, axis=(norm_axis,))
+    shifted = Sub.apply(x, Expand.apply(m, shape=x.shape))
+
+    e = Exp.apply(shifted)
+    s = Sum.apply(e, axis=(norm_axis,))
+    s = Expand.apply(s, shape=x.shape)
+
+    return Div.apply(e, s)
+
+Tensor.softmax = tensor_softmax
 
 # Step 49 - tensor_log_softmax (not yet solved)
 # TODO: implement
