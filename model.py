@@ -900,9 +900,29 @@ class MLP:
         # TODO: apply first layer, relu, then second layer
         if not isinstance(x, Tensor):
             x = tensor_from_data(x)
-        relu_fn = bind_unary_tensor_methods()['relu']
-        h = relu_fn(self.l1(x))
-        return self.l2(h)
+        if hasattr(self, 'W1') and isinstance(self.W1, np.ndarray):
+            W1 = tensor_from_data(self.W1)
+            b1 = tensor_from_data(self.b1)
+            h = tensor_matmul_2d(x, W1)
+            b1_expanded = Expand.apply(Reshape.apply(b1, shape=(1, b1.shape[0])), shape=h.shape)
+            h = Add.apply(h, b1_expanded)
+            relu_fn = bind_unary_tensor_methods()['relu']
+            h = relu_fn(h)
+        else:
+            h = self.l1(x)
+            relu_fn = bind_unary_tensor_methods()['relu']
+            h = relu_fn(h)
+
+        if hasattr(self, 'W2') and isinstance(self.W2, np.ndarray):
+            W2 = tensor_from_data(self.W2)
+            b2 = tensor_from_data(self.b2)
+            out = tensor_matmul_2d(h, W2)
+            b2_expanded = Expand.apply(Reshape.apply(b2, shape=(1, b2.shape[0])), shape=out.shape)
+            out = Add.apply(out, b2_expanded)
+        else:
+            out = self.l2(h)
+        
+        return out
 
     def parameters(self):
         # TODO: return combined parameter list of both layers
@@ -969,6 +989,14 @@ def train_mlp(X, y, epochs=50, learning_rate=0.1, hidden=16, seed=0):
         loss_history.append(float(loss.numpy()))
     return model, loss_history
 
-# Step 58 - evaluate_mlp (not yet solved)
-# TODO: implement
+# Step 58 - evaluate_mlp
+def evaluate_mlp(model, X_test, y_test):
+    # TODO: Run the model on X_test and return its classification accuracy
+    X_test = np.asarray(X_test, dtype=np.float32)
+    y_test = np.asarray(y_test)
+    
+    X_test_tensor = tensor_from_data(X_test, requires_grad=False)
+    logits = model(X_test_tensor)
+    acc = accuracy(logits, y_test)
+    return float(acc)
 
