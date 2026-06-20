@@ -513,6 +513,15 @@ class Tensor:
             return np.asarray(self.data._np, dtype=np.float32)
         return np.asarray(self.data)
 
+    @property
+    def lazybuffer(self):
+        return self.data
+    
+    def numpy(self):
+        if isinstance(self.data, LazyBuffer):
+            return np.asarray(self.data._np, dtype=np.float32)
+        return np.asarray(self.data)
+
 # Step 35 - tensor_from_data
 def tensor_from_data(data, requires_grad=False):
     # TODO: wrap a number, list, or numpy array in a LazyBuffer held by a Tensor
@@ -835,26 +844,20 @@ Tensor.log_softmax = tensor_log_softmax
 def sparse_categorical_cross_entropy(logits, labels):
     if not isinstance(logits, Tensor):
         logits = tensor_from_data(logits)
-
     N, C = logits.shape
     labels_np = np.asarray(labels).astype(np.int64)
-
     log_probs = tensor_log_softmax(logits, axis=-1)
-
     one_hot = np.zeros((N, C), dtype=np.float32)
     one_hot[np.arange(N), labels_np] = 1.0
     mask = Tensor(LazyBuffer(one_hot))
-
     picked = Mul.apply(log_probs, mask)
     picked_sum = Sum.apply(picked, axis=(1,))
-
     neg = Neg.apply(picked_sum)
     mean_loss = Sum.apply(neg, axis=(0,))
-
-    val = mean_loss.data._np / N
-    val = np.asarray(val, dtype=np.float64).reshape(())
-
-    return Tensor(LazyBuffer(val))
+    
+    scale = Tensor(LazyBuffer(np.array([1.0 / N], dtype=np.float32)))
+    final_loss = Mul.apply(mean_loss, scale)
+    return final_loss
 
 # Step 51 - Linear
 class Linear:
