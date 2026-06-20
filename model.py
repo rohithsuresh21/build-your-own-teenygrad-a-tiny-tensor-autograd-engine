@@ -858,8 +858,9 @@ def sparse_categorical_cross_entropy(logits, labels):
     neg = Neg.apply(picked_sum)
     mean_loss = Sum.apply(neg, axis=(0,))
     
-    scale = Tensor(LazyBuffer(np.array([1.0 / N], dtype=np.float32)))
-    final_loss = Mul.apply(mean_loss, scale)
+    mean_loss_scalar = Reshape.apply(mean_loss, shape=())
+    scale = Tensor(LazyBuffer(np.array(1.0 / N, dtype=np.float32)))
+    final_loss = Mul.apply(mean_loss_scalar, scale)
     return final_loss
 
 # Step 51 - Linear
