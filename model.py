@@ -420,6 +420,8 @@ def backward(self, grad_output):
     # TODO: broadcast the summed gradient back to the original input shape
     return grad_output.lazybuffer_movement_e(MovementOps.EXPAND, self.input_shape)
 
+Sum.backward = backward
+
 # Step 28 - max_function_forward
 class Max(Function):
     def forward(self, x, axis):
@@ -947,7 +949,6 @@ def accuracy(logits, labels):
 
 # Step 57 - train_mlp
 def train_mlp(X, y, epochs=50, learning_rate=0.1, hidden=16, seed=0):
-    # TODO: build an MLP for X, y and run gradient descent, returning (model, loss_history)
     X = np.asarray(X, dtype=np.float32)
     y = np.asarray(y)
     in_features = X.shape[1]
