@@ -429,6 +429,9 @@ class Max(Function):
         self.ret = x.lazybuffer_reduce_e(ReduceOps.MAX, axis)
         return self.ret
 
+    def backward(self, grad_output):
+        return grad_output.lazybuffer_movement_e(MovementOps.EXPAND, self.input_shape)
+
 # Step 29 - max_function_backward
 def backward(self, grad_output):
     # TODO: route grad_output back to the input elements that were the maximum
