@@ -511,11 +511,6 @@ class Tensor:
     def lazydata(self):
         return self.data
 
-    def numpy(self):
-        if isinstance(self.data, LazyBuffer):
-            return np.asarray(self.data._np, dtype=np.float32)
-        return np.asarray(self.data)
-
     @property
     def lazybuffer(self):
         return self.data
